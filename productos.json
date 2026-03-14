@@ -1,9 +1,30 @@
 [
     {
         "id": 4,
-        "nombre": "laptop",
-        "precio": 15000,
-        "stock": 8,
+        "nombre": "Laptop",
+        "precio": 600,
+        "stock": 21,
         "idCategoría": 1
+    },
+    {
+        "id": 5,
+        "nombre": "Teclado Mecánico",
+        "precio": 500,
+        "stock": 20,
+        "idCategoría": 2
+    },
+    {
+        "id": 6,
+        "nombre": "Mouse Ergonómico",
+        "precio": 401,
+        "stock": 230,
+        "idCategoría": 2
+    },
+    {
+        "id": 7,
+        "nombre": "Antena",
+        "precio": 900,
+        "stock": 20,
+        "idCategoría": 2
     }
 ]

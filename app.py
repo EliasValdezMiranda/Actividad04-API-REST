@@ -106,6 +106,98 @@ def categoriasID(id):
     else:
         return jsonify({"Error": "No se encontró la categoría buscada."}), 404
 
+# Ruta /productos [POST]
+@app.route('/productos', methods=['POST'])
+def subirProducto():
+    productos = cargarDatosJSON(ARCHIVO_PRODUCTOS_JSON)
+    # Si la función cargarDatosJSON devuelve None,
+    # el archivo está vacío y se empieza desde una lista vacía.
+    if productos is None:
+        productos = []
+    
+    # El programa pide al usuario los datos los cuales pueden ser ingresados desde POSTMAN.
+    datos = request.get_json()
+    # En caso de que el producto no cumple con las cabeceras, se le informa al usuario.
+    if not verificarProducto(datos, False):
+        return jsonify({'Error': 'Producto no compatible. Verifique que ingresó los datos correctamente'})
+    
+    categorias = cargarDatosJSON(ARCHIVO_CATEGORIAS_JSON)
+    # Si la función cargarDatosJSON devuelve None,
+    # el archivo no existe y se le informa al usuario.
+    if categorias is None:
+        return jsonify({'Error': 'No existen categorías registradas. Cree una categoría primero.'}), 404
+    # Verificación de la ID en forma de iteración. Itera sobre el archivo que contiene las categorias
+    # hasta que encuentra la ID.
+    categoria_existe = False
+    for categoria in categorias:
+        if verificarCategoria(categoria, True) and categoria['id'] == datos['idCategoría']:
+            categoria_existe = True
+            break
+    # En caso de que la iteración no encuentre la categoría, se le informa al usuario.
+    if not categoria_existe:
+        return jsonify({'Error': 'La categoría no existe'}), 404
+    
+    # Asignación de ID automáticamente.
+    nuevaID = 1 if not productos else productos[-1]['id'] + 1
+    
+    # Asignar datos a un nuevo producto en formato JSON
+    nuevoProducto = {
+        "id": nuevaID,
+        "nombre": datos['nombre'],
+        "precio": datos['precio'],
+        "stock": datos['stock'],
+        "idCategoría": datos['idCategoría']
+    }
+    # Guardar los datos en el archivo JSON
+    productos.append(nuevoProducto)
+    guardarDatosJSON(productos, ARCHIVO_PRODUCTOS_JSON)
+    return jsonify(nuevoProducto), 201
+
+# Ruta /productos/<id> [PUT]
+@app.route('/productos/<int:id>', methods=['PUT'])
+def editarProducto(id):
+    productos = cargarDatosJSON(ARCHIVO_PRODUCTOS_JSON)
+    # Si la función cargarDatosJSON devuelve None,
+    # el archivo está vacío y se le lanza una advertencia al usuario.
+    if productos is None:
+        return jsonify({'Error':'No hay productos para editar. Ingresar productos con "POST"'})
+    
+    # Busca en todo el archivo que contiene los productos (legible para Python)
+    for producto in productos:
+        # Verifica que la ID del producto coincida con la ID de un producto en el archivo
+        if verificarProducto(producto, True) and producto["id"]  == id:
+            datos = request.get_json()
+            # Verifica que las cabeceras del producto a añadir coicnidan con las demas cabeceras
+            if verificarProducto(datos, False):
+                return jsonify({'Error':'Datos no compatibles'})
+            categorias = cargarDatosJSON(ARCHIVO_CATEGORIAS_JSON)
+                # Si la función cargarDatosJSON devuelve None,
+                # el archivo está vacío y se le lanza una advertencia al usuario.
+            if categorias is None:
+                return jsonify({'Error':'No existen categorías registradas. Cree una categoría primero.'}), 404
+            # Verificación de la ID en forma de iteración. Itera sobre el archivo que contiene las categorias
+            # hasta que encuentra la ID.
+            categoria_existe = False
+            for categoria in categorias:
+                if verificarCategoria(categoria, True) and categoria['id'] == datos['idCategoría']:
+                    categoria_existe = True
+                    break
+            # En caso de que la iteración no encuentre la categoría, se le informa al usuario.
+            if not categoria_existe:
+                return jsonify({'Error':'La categoría no existe'}), 404
+            
+            # Remplaza los valores por los nuevos que ingrese el usuario mediante el 'request'
+            producto["nombre"] = datos["nombre"]
+            producto["precio"] = datos["precio"]
+            producto["stock"] = datos["stock"]
+            producto["idCategoría"] = datos["idCategoría"]
+            
+            # Guarda los datos en el archivo JSON
+            guardarDatosJSON(productos, ARCHIVO_PRODUCTOS_JSON)
+            return jsonify(producto), 200
+    # En caso de que el producto no haya sido encontrado, lanza un mensaje de error.
+    return jsonify({'Error':'No se encontró el producto buscado.'}), 404
+
 def main():
     app.run(debug = True)
 

@@ -2,5 +2,9 @@
     {
         "id": 1,
         "nombre": "Electrónica"
+    },
+    {
+        "id": 2,
+        "nombre": "Accesorios"
     }
 ]

@@ -198,6 +198,31 @@ def editarProducto(id):
     # En caso de que el producto no haya sido encontrado, lanza un mensaje de error.
     return jsonify({'Error':'No se encontró el producto buscado.'}), 404
 
+# Ruta /productos/<id> [DELETE]
+@app.route('/productos/<int:id>', methods=['DELETE'])
+def eliminarProducto(id):
+    productos = cargarDatosJSON(ARCHIVO_PRODUCTOS_JSON)
+
+    # Si la función cargarDatosJSON devuelve None,
+    # el archivo está vacío y se le lanza una advertencia al usuario.
+    if productos is None:
+        return jsonify({'Error': 'No hay productos para eliminar. Ingresar productos con "POST".'}), 404
+
+    # Itera sobre el archivo productos.json (formato legible para Python) hasta que
+    # encuentra el producto que coincida con la ID pasada del parámetro
+    for producto in productos:
+        if verificarProducto(producto, True) and producto["id"] == id:
+            # Copia la lista de productos y elimina el producto de esa copia de la lista
+            copiaProductos = productos.copy()
+            copiaProductos.remove(producto)
+
+            # Guarda los datos y devuelve un mensaje de éxito
+            guardarDatosJSON(copiaProductos, ARCHIVO_PRODUCTOS_JSON)
+            return jsonify({'Éxito': 'Producto eliminado.'}), 200
+
+    # En caso de no encontrar el producto que coincida con la ID, se le indica al usuario
+    return jsonify({'Error': 'No se encontró el producto buscado.'}), 404
+
 def main():
     app.run(debug = True)
 

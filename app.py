@@ -119,8 +119,18 @@ def subirProducto():
     datos = request.get_json()
     # En caso de que el producto no cumple con las cabeceras, se le informa al usuario.
     if not verificarProducto(datos, False):
-        return jsonify({'Error': 'Producto no compatible. Verifique que ingresó los datos correctamente'})
+        return jsonify({'Error': 'Producto no compatible. Verifique que ingresó los datos correctamente'}), 400
     
+    # El programa verifica que el precio sea un número y sea mayor a 0.
+    # En caso de que el producto no cumpla con las condiciones, se le informa al usuario.
+    if not isinstance(datos["precio"], (int, float)) or datos["precio"] < 0:
+        return jsonify({'Error': 'Precio inválido. Verifique haber introducido un valor numérico mayor o igual a 0'}), 400
+
+    # El programa verifica que el precio sea un número entero y sea mayor a 0.
+    # En caso de que el producto no cumpla con las condiciones, se le informa al usuario.
+    if not isinstance(datos["stock"], int) or datos["stock"] < 0:
+        return jsonify({'Error': 'Stock inválido. Verifique haber introducido un valor numérico entero mayor o igual a 0'}), 400
+
     categorias = cargarDatosJSON(ARCHIVO_CATEGORIAS_JSON)
     # Si la función cargarDatosJSON devuelve None,
     # el archivo no existe y se le informa al usuario.
@@ -160,16 +170,27 @@ def editarProducto(id):
     # Si la función cargarDatosJSON devuelve None,
     # el archivo está vacío y se le lanza una advertencia al usuario.
     if productos is None:
-        return jsonify({'Error':'No hay productos para editar. Ingresar productos con "POST"'})
+        return jsonify({'Error':'No hay productos para editar. Ingresar productos con "POST"'}), 404
     
     # Busca en todo el archivo que contiene los productos (legible para Python)
     for producto in productos:
         # Verifica que la ID del producto coincida con la ID de un producto en el archivo
         if verificarProducto(producto, True) and producto["id"]  == id:
             datos = request.get_json()
-            # Verifica que las cabeceras del producto a añadir coicnidan con las demas cabeceras
-            if verificarProducto(datos, False):
-                return jsonify({'Error':'Datos no compatibles'})
+            # Verifica que las cabeceras del producto a añadir coincidan con las demas cabeceras
+            if not verificarProducto(datos, False):
+                return jsonify({'Error':'Datos no compatibles. Verifique que ingresó los datos correctamente'}), 400
+
+            # El programa verifica que el precio sea un número y sea mayor a 0.
+            # En caso de que el producto no cumpla con las condiciones, se le informa al usuario.
+            if not isinstance(datos["precio"], (int, float)) or datos["precio"] < 0:
+                return jsonify({'Error': 'Precio inválido. Verifique haber introducido un valor numérico mayor o igual a 0'}), 400
+
+            # El programa verifica que el precio sea un número entero y sea mayor a 0.
+            # En caso de que el producto no cumpla con las condiciones, se le informa al usuario.
+            if not isinstance(datos["stock"], int) or datos["stock"] < 0:
+                return jsonify({'Error': 'Stock inválido. Verifique haber introducido un valor numérico entero mayor o igual a 0'}), 400
+            
             categorias = cargarDatosJSON(ARCHIVO_CATEGORIAS_JSON)
                 # Si la función cargarDatosJSON devuelve None,
                 # el archivo está vacío y se le lanza una advertencia al usuario.
